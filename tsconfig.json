@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es2018"
+    ],
+    "target": "es2018",
+    "allowJs": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "module": "commonjs",
+    "noImplicitAny": false,
+    "alwaysStrict": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "strictNullChecks": true,
+    "allowUnreachableCode": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "includes": [
+    "index.ts",
+    "lib/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules/**/*",
+    "dist"
+  ]
+}
