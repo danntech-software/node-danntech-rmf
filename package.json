@@ -1,9 +1,10 @@
 {
-  "name": "danntech-rmf",
+  "name": "@danntech/rmf",
   "version": "1.0.0",
   "description": "Implementation of the Danntech RMF bus protocol for node.js",
   "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,5 +23,9 @@
   "homepage": "https://github.com/danntech-software/node-danntech-rmf#readme",
   "dependencies": {
     "serialport": "^7.1.5"
+  },
+  "devDependencies": {
+    "@types/serialport": "^7.0.4",
+    "typescript": "^3.5.3"
   }
 }
