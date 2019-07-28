@@ -1,7 +1,7 @@
 import * as SerialPort from 'serialport';
 
-const MAX_MESSAGE_LENGTH = 200;
-const RESPONSE_TIMEOUT_MS = 200;
+const MAX_MESSAGE_LENGTH = 50;
+const RESPONSE_TIMEOUT_MS = 500;
 
 const rmfCommands = {
   readRegister: 2,
@@ -15,7 +15,8 @@ interface RmfMessage {
   data: number;
 }
 
-const timeout = (duration: number) => new Promise((_, reject) => setTimeout(reject, duration));
+const timeout = (duration: number) => new Promise((_, reject) =>
+  setTimeout(() => reject(new Error(`Timeout after ${duration}ms`)), duration));
 
 export class RmfMaster extends SerialPort {
   _readBuffer: string;
@@ -120,8 +121,7 @@ export class RmfMaster extends SerialPort {
     while (match) {
       // Remove from input buffer
       this._readBuffer = this._readBuffer.slice((match.index || 0) + match[0].length);
-
-      const { deviceAddress, command, register, data, checksum } = match.groups as any;
+      const [, deviceAddress, command, register, data, checksum] = [...match].map(s => parseInt(s));
       const expectedChecksum = (deviceAddress + command + register + data) & 0xffff;
       if (checksum !== expectedChecksum) {
         this.emit('error', new Error('RX checksum failure'));
@@ -149,13 +149,14 @@ export class RmfMaster extends SerialPort {
   }
 }
 
-function isUint16(value: number) {
+function isUint16(value: number): boolean {
   if (Object.is(value, NaN)) return false;
   if (value === Infinity) return false;
   if (value === -Infinity) return false;
   if (value !== (value | 0)) return false; // Not an integer
   if (value > 0xffff) return false;
   if (value < 0) return false;
+  return true;
 }
 
 function timeoutRequest<T>(request: Promise<T>, duration: number): Promise<T> {

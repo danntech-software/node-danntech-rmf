@@ -33,7 +33,7 @@ async function runExample() {
  - Clone repo
  - Run `npm install` in the repo to download dependencies
  - Make changes
- - Run `npm build` to compile the TS to JS
+ - Run `npm run build` to compile the TS to JS
  - Update version number
  - Run `npm publish` to publish changes to NPM
 
