@@ -14,7 +14,7 @@ interface RmfMessage {
   data: number;
 }
 
-interface Options extends SerialPort.OpenOptions {
+export interface Options extends SerialPort.OpenOptions {
   rmfResponseTimeoutMs: number;
 }
 
@@ -30,10 +30,10 @@ export class RmfMaster extends SerialPort {
       // Encouraging callers to open manually because `open` returns a promise
       // while `new` does not.
       autoOpen: false,
-      rmfResponseTimeoutMs: 500,
+      rmfResponseTimeoutMs: 100,
       ...options
     };
-    super(path, options);
+    super(path, opts);
     this.on('data', this._onDataReceived.bind(this));
 
     this._readBuffer = '';
