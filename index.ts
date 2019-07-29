@@ -1,7 +1,6 @@
 import * as SerialPort from 'serialport';
 
 const MAX_MESSAGE_LENGTH = 50;
-const RESPONSE_TIMEOUT_MS = 500;
 
 const rmfCommands = {
   readRegister: 2,
@@ -15,23 +14,30 @@ interface RmfMessage {
   data: number;
 }
 
+interface Options extends SerialPort.OpenOptions {
+  rmfResponseTimeoutMs: number;
+}
+
 const timeout = (duration: number) => new Promise((_, reject) =>
   setTimeout(() => reject(new Error(`Timeout after ${duration}ms`)), duration));
 
 export class RmfMaster extends SerialPort {
   _readBuffer: string;
+  _options: Options;
 
-	constructor(path: string, options?: SerialPort.OpenOptions) {
-    options = {
+	constructor(path: string, options?: Partial<Options>) {
+    const opts: Options = {
       // Encouraging callers to open manually because `open` returns a promise
       // while `new` does not.
       autoOpen: false,
+      rmfResponseTimeoutMs: 500,
       ...options
     };
     super(path, options);
     this.on('data', this._onDataReceived.bind(this));
 
     this._readBuffer = '';
+    this._options = opts;
   }
 
   open(): Promise<void> {
@@ -59,7 +65,7 @@ export class RmfMaster extends SerialPort {
     this.write(`@${deviceAddress},${command},${registerNumber},${registerValue},${checksum}\r`, 'ascii');
     const cancel = new Array<() => void>();
     try {
-      const response = await timeoutRequest(this._waitForNextMessage(cancel), RESPONSE_TIMEOUT_MS);
+      const response = await timeoutRequest(this._waitForNextMessage(cancel), this._options.rmfResponseTimeoutMs);
       if (response.deviceAddress !== deviceAddress) {
         throw new Error(`Expected response with device address ${deviceAddress}, but response has address ${response.deviceAddress}`);
       }
@@ -91,7 +97,7 @@ export class RmfMaster extends SerialPort {
     this.write(`@${deviceAddress},${command},${registerNumber},0,${checksum}\r`, 'ascii');
     const cancel = new Array<() => void>();
     try {
-      const response = await timeoutRequest(this._waitForNextMessage(cancel), RESPONSE_TIMEOUT_MS);
+      const response = await timeoutRequest(this._waitForNextMessage(cancel), this._options.rmfResponseTimeoutMs);
       if (response.deviceAddress !== deviceAddress) {
         throw new Error(`Expected response with device address ${deviceAddress}, but response has address ${response.deviceAddress}`);
       }
@@ -150,6 +156,7 @@ export class RmfMaster extends SerialPort {
 }
 
 function isUint16(value: number): boolean {
+  if (typeof value !== 'number') return false;
   if (Object.is(value, NaN)) return false;
   if (value === Infinity) return false;
   if (value === -Infinity) return false;
